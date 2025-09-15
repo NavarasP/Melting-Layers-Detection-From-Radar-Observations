@@ -1,0 +1,102 @@
+Yes ✅ — you **can** replicate the workflow from the paper with your **GPM DPR dataset**, but with some adaptations because DPR ≠ KAZR. Let’s go step by step and compare:
+
+---
+
+## 🔹 1. Inputs (what they used vs. what you have)
+
+* **Paper (KAZR):**
+
+  * Reflectivity (Ze)
+  * Doppler velocity (Vd)
+  * Gradient of Doppler velocity (dVd)
+
+* **You (DPR):**
+
+  * `zFactorMeasured` → Reflectivity (Ze)
+  * You don’t have Doppler velocity.
+  * But you **do** have **two frequencies** (Ku and Ka, last dimension in shape `[..., 2]`). That can act like extra channels.
+  * You can also compute **vertical gradient of reflectivity** (∆Ze/∆h) as an extra channel, which partly mimics what they did with dVd.
+
+👉 So your input can be 2 or 3 channels:
+
+* **Option A:** Ku Ze only.
+* **Option B:** Ku Ze + Ka Ze.
+* **Option C:** Ku Ze + Ka Ze + gradient(Ze).
+
+---
+
+## 🔹 2. Labels (ground truth melting layer)
+
+* **Paper:** Annotated melting layer masks manually.
+* **You:** Already have automated labels in DPR:
+
+  * `flagBB` → tells if melting layer is present.
+  * `heightBB` → where the bright band is.
+  * Sometimes DPR products also have `binBBTop`, `binBBBottom` → direct layer boundaries.
+* From these, you can **build binary masks**:
+
+  * Mask = 1 between top and bottom bins of bright band.
+  * Mask = 0 elsewhere.
+
+👉 That gives you segmentation masks like the paper’s annotated labels.
+
+---
+
+## 🔹 3. Preprocessing
+
+You can follow the same strategy:
+
+* Convert `(time, beam, vertical_bins, channels)` into **2D “radar images”**:
+
+  * Vertical axis = bins (height).
+  * Horizontal axis = time (scans).
+  * Channels = Ku/Ka Ze (+ optional gradient).
+* Normalize Ze to \[-1, 1].
+* Pad/resample to fixed size (e.g., 256×256).
+* Mask invalid values (fill = -9999 → set to -1).
+
+---
+
+## 🔹 4. Model
+
+* Use the same **U-Net segmentation architecture**.
+* Input: (height × time × channels).
+* Output: binary mask (melting layer region).
+* Loss: BCE + Dice (same as paper).
+
+---
+
+## 🔹 5. Training
+
+* Split dataset **temporally** (first 85% train, then val/test).
+* Augment with **horizontal flips (time axis)**.
+* Train with RMSProp optimizer.
+* Use **dropout at inference** (MC dropout) for uncertainty, same as paper.
+
+---
+
+## 🔹 6. Evaluation
+
+* Compute **Dice coefficient** for pixel-level overlap.
+* From the mask, extract **upper/lower boundaries** → compare with `heightBB` or `binBBTop`/`binBBBottom`.
+* Compute skill scores: POD, CSI, HSS.
+
+---
+
+## ✅ Bottom line
+
+Yes, you can **do the same experiment** with your DPR dataset.
+
+* Inputs = `zFactorMeasured` (Ku/Ka reflectivity) → normalized, formatted as 2D images.
+* Labels = masks built from `flagBB` + `heightBB` (or top/bottom bins if available).
+* Model = U-Net segmentation.
+* Training/evaluation pipeline = same as the paper.
+
+---
+
+⚠️ The only limitation: you don’t have Doppler velocity.
+But using **Ka + Ku reflectivity + gradient** is a strong substitute, because the bright band is very visible in reflectivity profiles.
+
+---
+
+👉 Do you want me to show you **exact code** for step (2) → building masks from your `flagBB` and `heightBB`, so that you get label images like the paper? That’s the critical part before training.
