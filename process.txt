@@ -1,0 +1,36 @@
+Detailed Explanation:
+
+This project focuses on the detection and segmentation of the "bright band" in precipitation profiles using data from the GPM Dual-frequency Precipitation Radar (DPR). The bright band is a radar signature caused by melting snowflakes, important for understanding precipitation type and intensity.
+
+Workflow:
+
+1. **Data Loading**:  
+   - The project reads HDF5 files containing GPM DPR radar measurements.
+   - Key variables extracted include reflectivity profiles, bright band flags, heights, and quality indicators.
+
+2. **Mask Creation**:  
+   - For each radar scan, the code identifies the presence and vertical extent of the bright band using provided flags and height/bin indices.
+   - Binary masks are generated to mark the bright band region in each profile.
+
+3. **Preprocessing**:  
+   - Reflectivity and mask arrays are reshaped and resized to a standard image format (256x256 pixels) suitable for deep learning.
+   - Data normalization and handling of missing values are performed to prepare for model training.
+
+4. **Dataset Splitting**:  
+   - The processed data is split into training, validation, and test sets to enable robust model evaluation.
+
+5. **Model Building**:  
+   - A U-Net convolutional neural network is constructed for image segmentation.
+   - Custom loss functions (binary cross-entropy + dice loss) are used to optimize segmentation accuracy.
+
+6. **Training**:  
+   - The U-Net model is trained to predict the bright band mask from input reflectivity images.
+   - Training progress is monitored using validation loss and early stopping.
+
+7. **Evaluation and Visualization**:  
+   - Model predictions are compared to ground truth masks on the test set.
+   - Visualization routines display both the input reflectivity and predicted/actual bright band masks for qualitative assessment.
+
+Purpose:
+
+This workflow enables automated detection of the bright band in radar data, supporting meteorological research and improving precipitation estimation from
