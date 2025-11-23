@@ -1,0 +1,23 @@
+Baseline GT (mask_mode="baseline")
+
+/FS/CSF/flagBB
+/FS/CSF/binBBTop
+/FS/CSF/binBBBottom
+Notes: Pixels between [binBBTop, binBBBottom] are 1 only where flagBB == 1. qualityBB/flagMLquality is loaded but not used to gate baseline.
+Conservative GT (mask_mode="conservative")
+
+/FS/CSF/flagBB
+/FS/CSF/binBBTop
+/FS/CSF/binBBBottom
+/FS/CSF/qualityBB (fallback: /FS/CSF/flagMLquality)
+Rule: Start with Baseline, then keep only where quality >= 50.
+Full GT (mask_mode="full" or else)
+
+Prefer DFR-derived bounds if present:
+/FS/CSF/binDFRmMLTop
+/FS/CSF/binDFRmMLBottom
+Fallback: Baseline (flagBB + binBBTop/Bottom) with no quality gating.
+Reflectivity fields used as inputs/features (not GT directly)
+
+Ku: /FS/SLV/zFactorFinal (fallback: /FS/PRE/zFactorMeasured)
+Ka: /HS/SLV/zFactorFinal (fallback: /HS/PRE/zFactorMeasured)

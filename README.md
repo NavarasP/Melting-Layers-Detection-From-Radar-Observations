@@ -1,37 +1,41 @@
-# Project Title
+Notebook usage (example):
 
-This project is designed for data preprocessing, specifically for handling GPM DPR data. It includes functions for building a U-Net model and custom loss functions for training.
+# 1) Imports
+from io_gpm import list_hdf5_files
+from dataset_gpm import make_patch_index, get_patch_as_tensor
+from model_unet import UNet
+from loss_metrics import ComboLoss
+from train_utils import train_one_epoch, evaluate
+from viz import visualize_prediction
+import torch
+from torch.utils.data import DataLoader, Dataset
 
-## Installation
+# 2) Build an index of patches
+files = list_hdf5_files('GPM_DPR_2024')
+index = make_patch_index(files, patch_size=128, step=128)  # returns list of dicts
 
-To set up the environment and install the necessary dependencies, follow these steps:
+# 3) Create a small custom Dataset wrapper (example)
+class PatchDataset(Dataset):
+    def __init__(self, index):
+        self.index = index
+    def __len__(self): return len(self.index)
+    def __getitem__(self, i):
+        meta = self.index[i]
+        X, mask = get_patch_as_tensor(meta['file'], meta['scan_start'], patch_size=128, device='cpu')
+        return X, mask
 
-1. Clone the repository or download the project files.
-2. Navigate to the project directory in your terminal.
-3. Create a virtual environment (optional but recommended):
-   ```
-   python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-   ```
-4. Install the required packages:
-   ```
-   pip install -r requirements.txt
-   ```
+ds = PatchDataset(index[:100])  # small subset
+dl = DataLoader(ds, batch_size=4, shuffle=True)
 
-## Usage
+# 4) Model, loss, optimizer
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = UNet().to(device)
+criterion = ComboLoss()
+opt = torch.optim.RMSprop(model.parameters(), lr=5e-3)
 
-After installing the dependencies, you can run the `preprocess.ipynb` file using Jupyter Notebook or any compatible environment. This notebook contains the main code for data preprocessing and model training.
+# 5) Train one epoch
+train_loss = train_one_epoch(model, dl, opt, criterion, device)
 
-## Requirements
-
-The following packages are required for this project:
-
-- TensorFlow
-- NumPy
-- Matplotlib
-- OpenCV
-- h5py
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+# 6) Visualize a sample
+X, y = ds[0]
+visualize_prediction(model, X, y, device=device, mc_dropout=False)

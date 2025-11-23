@@ -1,5 +1,32 @@
-tensorflow
-numpy
-matplotlib
-opencv-python
-h5py
+############################################################
+# Project requirements (pinned) — updated 2025-11-02
+# Notes:
+# - TensorFlow pipeline is primary; PyTorch kept for legacy notebooks in /old
+# - Pins chosen for broad CUDA/CPU availability and stability
+############################################################
+
+# Core scientific stack
+numpy==1.26.4
+scipy==1.11.4
+h5py==3.10.0
+matplotlib==3.8.4
+tqdm==4.66.4
+pillow==10.3.0
+
+# TensorFlow / Keras (primary for DGX notebooks)
+tensorflow==2.15.1
+
+# ML utilities
+scikit-learn==1.4.2
+
+# Notebooks
+ipykernel==6.29.5
+jupyter==1.0.0
+
+# Optional: ONNX export (used in dgx_test.ipynb, try/except guarded)
+tf2onnx==1.16.1
+onnx==1.16.1
+
+# Legacy PyTorch support (used by notebooks in ./old)
+torch==2.2.2
+torchvision==0.17.2

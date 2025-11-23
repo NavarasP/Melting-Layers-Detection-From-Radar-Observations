@@ -1,4 +1,4 @@
-/.env
+/.venv
 /analysis.ipynb
 /brightband_dataset.pkl
 /dataset.ipynb
@@ -6,3 +6,5 @@
 /GPM_DPR_2024
 /project
 dpr_preprocessed.npz
+/old
+.vscode
