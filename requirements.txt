@@ -28,5 +28,5 @@ tf2onnx==1.16.1
 onnx==1.16.1
 
 # Legacy PyTorch support (used by notebooks in ./old)
-torch==2.2.2
+torch==2.8.0
 torchvision==0.17.2
