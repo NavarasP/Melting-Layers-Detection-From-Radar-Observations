@@ -25,7 +25,7 @@ jupyter==1.0.0
 
 # Optional: ONNX export (used in dgx_test.ipynb, try/except guarded)
 tf2onnx==1.16.1
-onnx==1.16.1
+onnx==1.17.0
 
 # Legacy PyTorch support (used by notebooks in ./old)
 torch==2.2.2
